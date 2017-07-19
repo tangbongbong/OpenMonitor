@@ -18,3 +18,4 @@ def init_db():
     # 先导入他们。
     import models
     Base.metadata.create_all(bind=engine)
+
