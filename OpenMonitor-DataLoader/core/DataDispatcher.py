@@ -1,7 +1,9 @@
 import logging
-import schedule
 import time
 from multiprocessing.dummy import Pool as ThreadPool
+import requests
+import json
+import schedule
 
 from common import constant
 
@@ -13,7 +15,7 @@ class DataDispatcher:
         self.data_loaders = data_loaders
 
     def dispatch(self):
-        schedule.every(1).seconds.do(self.__cycle_dispatch__)
+        schedule.every(2).seconds.do(self.__cycle_dispatch__)
         while True:
             schedule.run_pending()
             time.sleep(1)
@@ -28,7 +30,7 @@ class DataDispatcher:
         data_loader.before_load()
 
         data = self.__load_data__(data_loader.load, data_loader.name)
-        map_data = self.__map_data__(data)
+        map_data = self.__map_data__(data_loader, data)
         self.__persist_data__(map_data)
 
         data_loader.after_load()
@@ -40,10 +42,14 @@ class DataDispatcher:
         logging.info("Load data time: %d ms , loader: %s" % (elapsed_time, loader_name))
         return data
 
-    def __map_data__(self, data):
+    def __map_data__(self, data_loader, data):
         logging.info(data)
-        return data
-        pass
+        return {
+            "data": data,
+            "plugin": data_loader.name,
+            "time": time.time()
+        }
 
     def __persist_data__(self, data):
-        pass
+        r = requests.post(constant.CONFIG_URL, data=data)
+        logging.info("post data %s, status:%s, reason:%s" % (json.dumps(data), r.status_code, r.reason))
