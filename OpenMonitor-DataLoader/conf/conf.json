@@ -1,5 +1,9 @@
 {
   "loaders" : [
-    "plugin.cpu_info"
+    "plugin.cpu_info",
+    "plugin.memory_info",
+    "plugin.disk_info",
+    "plugin.network_info",
+    "plugin.senors_info"
   ]
 }

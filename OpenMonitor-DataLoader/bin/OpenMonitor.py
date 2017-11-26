@@ -1,11 +1,13 @@
-import sys
-import logging
-import threading
 import json
+import logging
+import signal
+import sys
+
 from common import constant
-from pprint import pprint
 from core import DataDispatcher
 from core import DataLoaderFactory
+
+dispatcher = None
 
 
 def set_log():
@@ -31,11 +33,19 @@ def fetch_data_loader(config_data):
 
 def dispatch(loaders):
     factory = DataLoaderFactory()
-    factory.make_loader(loaders)
-    dispatcher = DataDispatcher(factory.loader_list)
+    loader_list = factory.make_loader(loaders)
+    global dispatcher
+    dispatcher = DataDispatcher(loader_list)
     dispatcher.dispatch()
-    # dispat
     pass
+
+
+def signal_term_handler(signal, frame):
+    logging.warning('got SIGTERM, exit now.')
+    global dispatcher
+    if dispatcher is not None:
+        dispatcher.exit()
+    sys.exit(0)
 
 
 def main():
@@ -51,4 +61,5 @@ def main():
 
 
 if __name__ == '__main__':
+    signal.signal(signal.SIGTERM, signal_term_handler)
     main()

@@ -1,12 +1,13 @@
 from importlib import import_module
 
-class DataLoaderFactory:
-    loader_list = []
 
+class DataLoaderFactory:
     def make_loader(self, loader_names):
+        loader_list = []
         for loader in loader_names:
             target_loader = self.__get_class__(loader)
-            self.loader_list.append(target_loader)
+            loader_list.append(target_loader)
+        return loader_list
 
     def __get_class__(self, kls):
         class_name = kls.split('.')[1]

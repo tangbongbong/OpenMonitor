@@ -1,7 +1,9 @@
-from multiprocessing.dummy import Pool as ThreadPool
-from common import constant
 import logging
+import schedule
 import time
+from multiprocessing.dummy import Pool as ThreadPool
+
+from common import constant
 
 
 class DataDispatcher:
@@ -11,6 +13,15 @@ class DataDispatcher:
         self.data_loaders = data_loaders
 
     def dispatch(self):
+        schedule.every(1).seconds.do(self.__cycle_dispatch__)
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+
+    def exit(self):
+        schedule.cancel_job(self.__cycle_dispatch__)
+
+    def __cycle_dispatch__(self):
         self.pool.map(self.__dispatch__, self.data_loaders)
 
     def __dispatch__(self, data_loader):
@@ -31,6 +42,7 @@ class DataDispatcher:
 
     def __map_data__(self, data):
         logging.info(data)
+        return data
         pass
 
     def __persist_data__(self, data):
